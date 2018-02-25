@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Shadertoy SVG</title>
+  <meta name="description" content="Shadertoy SVG">
+  <meta name="author" content="Daniel Zduniak">
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+
+  <script src="bundle.js"></script>
+</head>
+<body>
+  <h1>SVG-to-Shadertoy GLSL code generator.</h1>
+  <label>Pick SVG file here: <input name="file" id="file" type="file" accept=".svg"></label>
+  <div class="output">
+    <label for="output">Shadertoy GLSL code:</label> <textarea name="output" id="output" rows="32" cols="100"></textarea>
+    <button id="copy">Copy</button>
+  </div>
+  <div class="preview">
+    <label for="canvas">Preview:</label>
+    <canvas id="canvas"></canvas>
+  </div>
+  <div class="footer">
+    <p>
+      <a href="https://github.com/dzduniak/svg-shadertoy">GitHub page</a>
+    </p>
+  </div>
+</body>
+</html>

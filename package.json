@@ -1,0 +1,26 @@
+{
+  "name": "svg-shadertoy",
+  "version": "1.0.0",
+  "description": "Generate shader code (for Shadertoy website) displaying path in provided SVG file.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dzduniak/shadertoy-svg.git"
+  },
+  "keywords": [
+    "shadertoy",
+    "svg",
+    "glsl"
+  ],
+  "author": "Daniel Zduniak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dzduniak/shadertoy-svg/issues"
+  },
+  "homepage": "https://github.com/dzduniak/shadertoy-svg#readme",
+  "dependencies": {
+    "extract-svg-path": "^2.1.0",
+    "load-svg": "^1.0.0",
+    "svg-mesh-3d": "^1.1.0"
+  }
+}
