@@ -1,0 +1,27 @@
+label, button {
+    display: block;
+    margin-top: 15px;
+}
+
+#copy {
+    margin-top: 5px;
+}
+
+#canvas {
+    width: 640px;
+    height: 480px;
+}
+
+.output {
+    float: left;
+    margin-right: 30px;
+}
+
+#canvas {
+    background-color: lightgray;
+}
+
+.footer {
+    padding-top: 10px;
+    clear: both;
+}
