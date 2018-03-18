@@ -1,6 +1,7 @@
 <!doctype html>
 
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
 
@@ -13,24 +14,34 @@
   <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
   <![endif]-->
-
-  <script src="bundle.js"></script>
 </head>
+
 <body>
   <h1>SVG-to-Shadertoy GLSL code generator.</h1>
-  <label>Pick SVG file here: <input name="file" id="file" type="file" accept=".svg"></label>
-  <div class="output">
-    <label for="output">Shadertoy GLSL code:</label> <textarea name="output" id="output" rows="32" cols="100"></textarea>
-    <button id="copy">Copy</button>
-  </div>
-  <div class="preview">
-    <label for="canvas">Preview:</label>
-    <canvas id="canvas"></canvas>
+  <label>Options passed to <a href="https://github.com/mattdesl/svg-mesh-3d">svg-mesh-3d</a>:
+    <input name="options" id="options" type="text" value="{ &quot;scale&quot;: 4 }">
+  </label>
+  <label>Pick SVG file here:
+    <input name="file" id="file" type="file" accept=".svg">
+  </label>
+  <button id="parse">Parse</button>
+  <div class="wrapper">
+    <div class="output">
+      <label for="output">Shadertoy GLSL code: </label>
+      <textarea name="output" id="output" rows="32" cols="100"></textarea>
+      <button id="copy">Copy</button>
+    </div>
+    <div class="preview">
+      <label for="canvas">Preview:</label>
+      <canvas id="canvas"></canvas>
+    </div>
   </div>
   <div class="footer">
     <p>
       <a href="https://github.com/dzduniak/svg-shadertoy">GitHub page</a>
     </p>
   </div>
+  <script src="bundle.js"></script>
 </body>
+
 </html>
