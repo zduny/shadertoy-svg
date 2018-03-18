@@ -1946,20 +1946,71 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 var loadSvg = require('load-svg')
 var parsePath = require('extract-svg-path').parse
 var svgMesh3d = require('svg-mesh-3d')
+var drawTriangles = require('draw-triangles-2d')
 
-var input = document.getElementById("file");
-var output = document.getElementById("output");
+function shadertoy_svg() {
+  var input = document.getElementById("file");
+  var parse = document.getElementById("parse");
+  var options = document.getElementById("options");
+  var output = document.getElementById("output");
+  var canvas = document.getElementById("canvas");
 
+  function draw(mesh) {
+    var c = canvas.getContext("2d");
 
-input.onchange = function() {
-  if (input.files.length === 1) {
-    var svgPath = parsePath(input.files[0]);
-    var mesh = svgMesh3d(svgPath)
+    canvas.width = canvas.clientWidth * window.devicePixelRatio;
+    canvas.height = canvas.clientHeight * window.devicePixelRatio;
 
-    console.log(mesh);
+    c.clearRect(0, 0, canvas.width, canvas.height);
+    var mx = canvas.width / 2;
+    var my = canvas.height / 2;
+    var m = canvas.height / 2;
+
+    c.save();
+
+    c.translate(mx, my);
+    c.scale(m, -m);
+
+    c.beginPath();
+    drawTriangles(c, mesh.positions, mesh.cells);
+    c.fillStyle = 'black';
+    c.fill();
+
+    c.restore();
+  }
+
+  function parseSVG() {
+    if (input.files.length === 1) {
+      var reader = new FileReader();
+
+      reader.onload = function () {
+        try {
+          var svg = reader.result;
+          var svgPath = parsePath(svg);
+          var mesh = svgMesh3d(svgPath, JSON.parse(options.value));
+
+          draw(mesh);
+        } catch (e) {
+          output.value = "Error occured:\n"
+          output.value += e;
+        }
+      }
+
+      reader.readAsText(input.files[0]);
+    }
+  }
+
+  input.onchange = function () {
+    parseSVG();
+  }
+
+  parse.onclick = function() {
+    parseSVG();
   }
 }
-},{"extract-svg-path":45,"load-svg":49,"svg-mesh-3d":71}],6:[function(require,module,exports){
+
+shadertoy_svg();
+},{"draw-triangles-2d":44,"extract-svg-path":46,"load-svg":50,"svg-mesh-3d":72}],6:[function(require,module,exports){
 
 module.exports = absolutize
 
@@ -6382,7 +6433,7 @@ function boxIntersectWrapper(arg0, arg1, arg2) {
       throw new Error('box-intersect: Invalid arguments')
   }
 }
-},{"./lib/intersect":31,"./lib/sweep":35,"typedarray-pool":76}],30:[function(require,module,exports){
+},{"./lib/intersect":31,"./lib/sweep":35,"typedarray-pool":77}],30:[function(require,module,exports){
 'use strict'
 
 var DIMENSION   = 'd'
@@ -7022,7 +7073,7 @@ function boxIntersectIter(
     }
   }
 }
-},{"./brute":30,"./median":32,"./partition":33,"./sweep":35,"bit-twiddle":26,"typedarray-pool":76}],32:[function(require,module,exports){
+},{"./brute":30,"./median":32,"./partition":33,"./sweep":35,"bit-twiddle":26,"typedarray-pool":77}],32:[function(require,module,exports){
 'use strict'
 
 module.exports = findMedian
@@ -7858,7 +7909,7 @@ red_loop:
     }
   }
 }
-},{"./sort":34,"bit-twiddle":26,"typedarray-pool":76}],36:[function(require,module,exports){
+},{"./sort":34,"bit-twiddle":26,"typedarray-pool":77}],36:[function(require,module,exports){
 'use strict'
 
 var monotoneTriangulate = require('./lib/monotone')
@@ -8059,7 +8110,7 @@ function delaunayRefine(points, triangulation) {
   }
 }
 
-},{"binary-search-bounds":25,"robust-in-sphere":62}],38:[function(require,module,exports){
+},{"binary-search-bounds":25,"robust-in-sphere":63}],38:[function(require,module,exports){
 'use strict'
 
 var bsearch = require('binary-search-bounds')
@@ -8430,7 +8481,7 @@ function monotoneTriangulate(points, edges) {
   return cells
 }
 
-},{"binary-search-bounds":25,"robust-orientation":63}],40:[function(require,module,exports){
+},{"binary-search-bounds":25,"robust-orientation":64}],40:[function(require,module,exports){
 'use strict'
 
 var bsearch = require('binary-search-bounds')
@@ -8919,7 +8970,7 @@ function cleanPSLG (points, edges, colors) {
   return modified
 }
 
-},{"./lib/rat-seg-intersect":42,"big-rat":12,"big-rat/cmp":10,"big-rat/to-float":24,"box-intersect":29,"nextafter":50,"rat-vec":59,"robust-segment-intersect":65,"union-find":77}],42:[function(require,module,exports){
+},{"./lib/rat-seg-intersect":42,"big-rat":12,"big-rat/cmp":10,"big-rat/to-float":24,"box-intersect":29,"nextafter":51,"rat-vec":60,"robust-segment-intersect":66,"union-find":78}],42:[function(require,module,exports){
 'use strict'
 
 module.exports = solveIntersection
@@ -8963,7 +9014,7 @@ function solveIntersection (a, b, c, d) {
   return r
 }
 
-},{"big-rat/div":11,"big-rat/mul":21,"big-rat/sign":22,"big-rat/sub":23,"rat-vec/add":58,"rat-vec/muls":60,"rat-vec/sub":61}],43:[function(require,module,exports){
+},{"big-rat/div":11,"big-rat/mul":21,"big-rat/sign":22,"big-rat/sub":23,"rat-vec/add":59,"rat-vec/muls":61,"rat-vec/sub":62}],43:[function(require,module,exports){
 (function (Buffer){
 var hasTypedArrays = false
 if(typeof Float64Array !== "undefined") {
@@ -9068,6 +9119,23 @@ module.exports.denormalized = function(n) {
 }
 }).call(this,require("buffer").Buffer)
 },{"buffer":3}],44:[function(require,module,exports){
+module.exports = function drawTriangles(ctx, positions, cells, start, end) {
+    var v = positions
+    start = (start|0)
+    end = typeof end === 'number' ? (end|0) : cells.length
+
+    for (; start < end && start < cells.length; start++) {
+        var f = cells[start]
+        var v0 = v[f[0]],
+            v1 = v[f[1]],
+            v2 = v[f[2]]
+        ctx.moveTo(v0[0], v0[1])
+        ctx.lineTo(v1[0], v1[1])
+        ctx.lineTo(v2[0], v2[1])
+        ctx.lineTo(v0[0], v0[1])
+    }
+}
+},{}],45:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -9117,7 +9185,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var parseXml = require('xml-parse-from-string')
 
 function extractSvgPath (svgDoc) {
@@ -9145,7 +9213,7 @@ module.exports.parse = extractSvgPath
 //deprecated
 module.exports.fromString = extractSvgPath
 
-},{"xml-parse-from-string":81}],46:[function(require,module,exports){
+},{"xml-parse-from-string":82}],47:[function(require,module,exports){
 var isFunction = require('is-function')
 
 module.exports = forEach
@@ -9193,7 +9261,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{"is-function":48}],47:[function(require,module,exports){
+},{"is-function":49}],48:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -9210,7 +9278,7 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -9227,7 +9295,7 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 var xhr = require('xhr');
 
 module.exports = function (opts, cb) {
@@ -9246,7 +9314,7 @@ module.exports = function (opts, cb) {
     });
 };
 
-},{"xhr":80}],50:[function(require,module,exports){
+},{"xhr":81}],51:[function(require,module,exports){
 "use strict"
 
 var doubleBits = require("double-bits")
@@ -9289,7 +9357,7 @@ function nextafter(x, y) {
   }
   return doubleBits.pack(lo, hi)
 }
-},{"double-bits":43}],51:[function(require,module,exports){
+},{"double-bits":43}],52:[function(require,module,exports){
 var getBounds = require('bound-points')
 var unlerp = require('unlerp')
 
@@ -9322,7 +9390,7 @@ function normalizePathScale (positions, bounds) {
   }
   return positions
 }
-},{"bound-points":28,"unlerp":78}],52:[function(require,module,exports){
+},{"bound-points":28,"unlerp":79}],53:[function(require,module,exports){
 
 var π = Math.PI
 var _120 = radians(120)
@@ -9524,7 +9592,7 @@ function radians(degress){
 	return degress * (π / 180)
 }
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -9616,7 +9684,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -9637,7 +9705,7 @@ function once (fn) {
   }
 }
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var trim = require('trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -9669,7 +9737,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":46,"trim":73}],56:[function(require,module,exports){
+},{"for-each":47,"trim":74}],57:[function(require,module,exports){
 
 module.exports = parse
 
@@ -9728,7 +9796,7 @@ function parseValues(args) {
 	return numbers ? numbers.map(Number) : []
 }
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 'use strict';
 module.exports = function (min, max) {
 	if (max === undefined) {
@@ -9743,7 +9811,7 @@ module.exports = function (min, max) {
 	return Math.random() * (max - min) + min;
 };
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 'use strict'
 
 var bnadd = require('big-rat/add')
@@ -9759,7 +9827,7 @@ function add (a, b) {
   return r
 }
 
-},{"big-rat/add":9}],59:[function(require,module,exports){
+},{"big-rat/add":9}],60:[function(require,module,exports){
 'use strict'
 
 module.exports = float2rat
@@ -9774,7 +9842,7 @@ function float2rat(v) {
   return result
 }
 
-},{"big-rat":12}],60:[function(require,module,exports){
+},{"big-rat":12}],61:[function(require,module,exports){
 'use strict'
 
 var rat = require('big-rat')
@@ -9792,7 +9860,7 @@ function muls(a, x) {
   return r
 }
 
-},{"big-rat":12,"big-rat/mul":21}],61:[function(require,module,exports){
+},{"big-rat":12,"big-rat/mul":21}],62:[function(require,module,exports){
 'use strict'
 
 var bnsub = require('big-rat/sub')
@@ -9808,7 +9876,7 @@ function sub(a, b) {
   return r
 }
 
-},{"big-rat/sub":23}],62:[function(require,module,exports){
+},{"big-rat/sub":23}],63:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -9976,7 +10044,7 @@ function generateInSphereTest() {
 }
 
 generateInSphereTest()
-},{"robust-scale":64,"robust-subtract":66,"robust-sum":67,"two-product":74}],63:[function(require,module,exports){
+},{"robust-scale":65,"robust-subtract":67,"robust-sum":68,"two-product":75}],64:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -10167,7 +10235,7 @@ function generateOrientationProc() {
 }
 
 generateOrientationProc()
-},{"robust-scale":64,"robust-subtract":66,"robust-sum":67,"two-product":74}],64:[function(require,module,exports){
+},{"robust-scale":65,"robust-subtract":67,"robust-sum":68,"two-product":75}],65:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -10218,7 +10286,7 @@ function scaleLinearExpansion(e, scale) {
   g.length = count
   return g
 }
-},{"two-product":74,"two-sum":75}],65:[function(require,module,exports){
+},{"two-product":75,"two-sum":76}],66:[function(require,module,exports){
 "use strict"
 
 module.exports = segmentsIntersect
@@ -10266,7 +10334,7 @@ function segmentsIntersect(a0, a1, b0, b1) {
 
   return true
 }
-},{"robust-orientation":63}],66:[function(require,module,exports){
+},{"robust-orientation":64}],67:[function(require,module,exports){
 "use strict"
 
 module.exports = robustSubtract
@@ -10423,7 +10491,7 @@ function robustSubtract(e, f) {
   g.length = count
   return g
 }
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 "use strict"
 
 module.exports = linearExpansionSum
@@ -10580,7 +10648,7 @@ function linearExpansionSum(e, f) {
   g.length = count
   return g
 }
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 // square distance from a point to a segment
 function getSqSegDist(p, p1, p2) {
     var x = p1[0],
@@ -10644,7 +10712,7 @@ module.exports = function simplifyDouglasPeucker(points, tolerance) {
     return simplified;
 }
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var simplifyRadialDist = require('./radial-distance')
 var simplifyDouglasPeucker = require('./douglas-peucker')
 
@@ -10657,7 +10725,7 @@ module.exports = function simplify(points, tolerance) {
 
 module.exports.radialDistance = simplifyRadialDist;
 module.exports.douglasPeucker = simplifyDouglasPeucker;
-},{"./douglas-peucker":68,"./radial-distance":70}],70:[function(require,module,exports){
+},{"./douglas-peucker":69,"./radial-distance":71}],71:[function(require,module,exports){
 function getSqDist(p1, p2) {
     var dx = p1[0] - p2[0],
         dy = p1[1] - p2[1];
@@ -10689,7 +10757,7 @@ module.exports = function simplifyRadialDist(points, tolerance) {
 
     return newPoints;
 }
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 var parseSVG = require('parse-svg-path')
 var getContours = require('svg-path-contours')
 var cdt2d = require('cdt2d')
@@ -10815,7 +10883,7 @@ function denestPolyline (nested) {
   }
 }
 
-},{"bound-points":28,"cdt2d":36,"clean-pslg":41,"normalize-path-scale":51,"object-assign":53,"parse-svg-path":56,"random-float":57,"simplify-path":69,"svg-path-contours":72}],72:[function(require,module,exports){
+},{"bound-points":28,"cdt2d":36,"clean-pslg":41,"normalize-path-scale":52,"object-assign":54,"parse-svg-path":57,"random-float":58,"simplify-path":70,"svg-path-contours":73}],73:[function(require,module,exports){
 var bezier = require('adaptive-bezier-curve')
 var abs = require('abs-svg-path')
 var norm = require('normalize-svg-path')
@@ -10861,7 +10929,7 @@ module.exports = function contours(svg, scale) {
         paths.push(points)
     return paths
 }
-},{"abs-svg-path":6,"adaptive-bezier-curve":8,"normalize-svg-path":52,"vec2-copy":79}],73:[function(require,module,exports){
+},{"abs-svg-path":6,"adaptive-bezier-curve":8,"normalize-svg-path":53,"vec2-copy":80}],74:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -10877,7 +10945,7 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict"
 
 module.exports = twoProduct
@@ -10911,7 +10979,7 @@ function twoProduct(a, b, result) {
 
   return [ y, x ]
 }
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 "use strict"
 
 module.exports = fastTwoSum
@@ -10929,7 +10997,7 @@ function fastTwoSum(a, b, result) {
 	}
 	return [ar+br, x]
 }
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 (function (global,Buffer){
 'use strict'
 
@@ -11146,7 +11214,7 @@ exports.clearCache = function clearCache() {
   }
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"bit-twiddle":26,"buffer":3,"dup":44}],77:[function(require,module,exports){
+},{"bit-twiddle":26,"buffer":3,"dup":45}],78:[function(require,module,exports){
 "use strict"; "use restrict";
 
 module.exports = UnionFind;
@@ -11209,17 +11277,17 @@ proto.link = function(x, y) {
     ++ranks[xr];
   }
 }
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 module.exports = function range(min, max, value) {
   return (value - min) / (max - min)
 }
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports = function vec2Copy(out, a) {
     out[0] = a[0]
     out[1] = a[1]
     return out
 }
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 var parseHeaders = require('parse-headers')
@@ -11398,7 +11466,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":47,"once":54,"parse-headers":55}],81:[function(require,module,exports){
+},{"global/window":48,"once":55,"parse-headers":56}],82:[function(require,module,exports){
 module.exports = (function xmlparser() {
   //common browsers
   if (typeof self.DOMParser !== 'undefined') {
