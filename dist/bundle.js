@@ -1859,7 +1859,7 @@ function numberIsNaN (obj) {
 },{"base64-js":1,"ieee754":4}],4:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
-  var eLen = nBytes * 8 - mLen - 1
+  var eLen = (nBytes * 8) - mLen - 1
   var eMax = (1 << eLen) - 1
   var eBias = eMax >> 1
   var nBits = -7
@@ -1872,12 +1872,12 @@ exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   e = s & ((1 << (-nBits)) - 1)
   s >>= (-nBits)
   nBits += eLen
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+  for (; nBits > 0; e = (e * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
   m = e & ((1 << (-nBits)) - 1)
   e >>= (-nBits)
   nBits += mLen
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+  for (; nBits > 0; m = (m * 256) + buffer[offset + i], i += d, nBits -= 8) {}
 
   if (e === 0) {
     e = 1 - eBias
@@ -1892,7 +1892,7 @@ exports.read = function (buffer, offset, isLE, mLen, nBytes) {
 
 exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   var e, m, c
-  var eLen = nBytes * 8 - mLen - 1
+  var eLen = (nBytes * 8) - mLen - 1
   var eMax = (1 << eLen) - 1
   var eBias = eMax >> 1
   var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
@@ -1925,7 +1925,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
       m = 0
       e = eMax
     } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen)
+      m = ((value * c) - 1) * Math.pow(2, mLen)
       e = e + eBias
     } else {
       m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
@@ -1954,6 +1954,8 @@ function shadertoy_svg() {
   var options = document.getElementById("options");
   var output = document.getElementById("output");
   var canvas = document.getElementById("canvas");
+
+  new ClipboardJS("#copy");
 
   function draw(mesh) {
     var c = canvas.getContext("2d");
@@ -1988,6 +1990,17 @@ function shadertoy_svg() {
           var svg = reader.result;
           var svgPath = parsePath(svg);
           var mesh = svgMesh3d(svgPath, JSON.parse(options.value));
+
+          var positions = "const vec3 positions[" + mesh.positions.length + "] = ";
+          positions += "vec3[" + mesh.positions.length + "](" +
+            mesh.positions.map(function(it) { return "vec3(" + it.join(", ") + ")"; }).join(", ") +
+            ");";
+
+          var indices = "const ivec3 indices[" + mesh.cells.length + "] = ";
+          indices += "ivec3[" + mesh.cells.length + "](" +
+            mesh.cells.map(function(it) { return "ivec3(" + it.join(", ") + ")"; }).join(", ") +
+            ");";
+          output.value = positions + "\n" + indices;
 
           draw(mesh);
         } catch (e) {

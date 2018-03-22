@@ -10,6 +10,8 @@ function shadertoy_svg() {
   var output = document.getElementById("output");
   var canvas = document.getElementById("canvas");
 
+  new ClipboardJS("#copy");
+
   function draw(mesh) {
     var c = canvas.getContext("2d");
 
@@ -43,6 +45,17 @@ function shadertoy_svg() {
           var svg = reader.result;
           var svgPath = parsePath(svg);
           var mesh = svgMesh3d(svgPath, JSON.parse(options.value));
+
+          var positions = "const vec3 positions[" + mesh.positions.length + "] = ";
+          positions += "vec3[" + mesh.positions.length + "](" +
+            mesh.positions.map(function(it) { return "vec3(" + it.join(", ") + ")"; }).join(", ") +
+            ");";
+
+          var indices = "const ivec3 indices[" + mesh.cells.length + "] = ";
+          indices += "ivec3[" + mesh.cells.length + "](" +
+            mesh.cells.map(function(it) { return "ivec3(" + it.join(", ") + ")"; }).join(", ") +
+            ");";
+          output.value = positions + "\n" + indices;
 
           draw(mesh);
         } catch (e) {
