@@ -29,7 +29,7 @@
     <div class="output">
       <label for="output">Shadertoy GLSL code: </label>
       <textarea name="output" id="output" rows="32" cols="100"></textarea>
-      <button id="copy">Copy</button>
+      <button id="copy" data-clipboard-target="#output">Copy</button>
     </div>
     <div class="preview">
       <label for="canvas">Preview:</label>
@@ -41,6 +41,7 @@
       <a href="https://github.com/dzduniak/svg-shadertoy">GitHub page</a>
     </p>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
   <script src="bundle.js"></script>
 </body>
 
