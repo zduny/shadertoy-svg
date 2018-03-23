@@ -3,6 +3,42 @@ var parsePath = require('extract-svg-path').parse
 var svgMesh3d = require('svg-mesh-3d')
 var drawTriangles = require('draw-triangles-2d')
 
+function zip(a, b) {
+  return a.map(function (it, i) {
+    [it, b[i]];
+  });
+}
+
+function cross(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ];
+}
+
+function dot(a, b) {
+  zip(a, b).reduce(function (d, v) {
+    return d + v[0] * v[1];
+  });
+}
+
+function subtract(a, b) {
+  return a.map(function (it, i) {
+    it - b[i];
+  });
+}
+
+function sameSide(p1, p2, a, b) {
+  cp1 = cross(subtract(b, a), subtract(p1, a));
+  cp2 = cross(subtract(b, a), subtract(p2, a));
+  return dot(cp1, cp2) >= 0;
+}
+
+function pointInTriangle(p, a, b, c) {
+  return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b)
+}
+
 function shadertoy_svg() {
   var input = document.getElementById("file");
   var parse = document.getElementById("parse");
@@ -48,14 +84,19 @@ function shadertoy_svg() {
 
           var positions = "const vec3 positions[" + mesh.positions.length + "] = ";
           positions += "vec3[" + mesh.positions.length + "](" +
-            mesh.positions.map(function(it) { return "vec3(" + it.join(", ") + ")"; }).join(", ") +
+            mesh.positions.map(function (it) {
+              return "vec3(" + it.join(", ") + ")";
+            }).join(", ") +
             ");";
 
-          var indices = "const ivec3 indices[" + mesh.cells.length + "] = ";
-          indices += "ivec3[" + mesh.cells.length + "](" +
-            mesh.cells.map(function(it) { return "ivec3(" + it.join(", ") + ")"; }).join(", ") +
+          var triangles = "const ivec3 triangles[" + mesh.cells.length + "] = ";
+          triangles += "ivec3[" + mesh.cells.length + "](" +
+            mesh.cells.map(function (it) {
+              return "ivec3(" + it.join(", ") + ")";
+            }).join(", ") +
             ");";
-          output.value = positions + "\n" + indices;
+
+          output.value = positions + "\n" + triangles;
 
           draw(mesh);
         } catch (e) {
@@ -72,7 +113,7 @@ function shadertoy_svg() {
     parseSVG();
   }
 
-  parse.onclick = function() {
+  parse.onclick = function () {
     parseSVG();
   }
 }
