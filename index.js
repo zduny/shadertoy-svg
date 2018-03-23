@@ -29,6 +29,12 @@ function subtract(a, b) {
   });
 }
 
+function multiply(a, m) {
+  return a.map(function (it) {
+    it * m;
+  });
+}
+
 function sameSide(p1, p2, a, b) {
   cp1 = cross(subtract(b, a), subtract(p1, a));
   cp2 = cross(subtract(b, a), subtract(p2, a));
@@ -37,6 +43,18 @@ function sameSide(p1, p2, a, b) {
 
 function pointInTriangle(p, a, b, c) {
   return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b)
+}
+
+function pointInAABB(p, min, max) {
+  return p[0] > min[0] && p[1] > min[1] && p[0] < max[0] && p[1] < max[1];
+}
+
+function segmentAABBTest(a, b, min, max) {
+  
+}
+
+function triangleAABBTest(triangle, min, max) {
+
 }
 
 function shadertoy_svg() {
