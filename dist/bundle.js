@@ -1948,6 +1948,63 @@ var parsePath = require('extract-svg-path').parse
 var svgMesh3d = require('svg-mesh-3d')
 var drawTriangles = require('draw-triangles-2d')
 
+var prefix = `// Created using Shadertoy-SVG: https://dzduniak.github.io/shadertoy-svg/
+// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/MsyyWh
+
+`;
+
+var postfix = `
+bool sameSide( vec3 p1, vec3 p2, vec3 a, vec3 b ) {
+    vec3 cp1 = cross(b-a, p1-a);
+    vec3 cp2 = cross(b-a, p2-a);
+      
+    return dot(cp1, cp2) >= 0.0;
+}
+
+bool pointInTriangle( vec3 p, vec3 a, vec3 b, vec3 c ) {
+    return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b);
+}
+
+bool inPath( vec2 p ) {
+    for (int i=0; i<len; i++) {
+        ivec3 triangle = triangles[i];
+        vec3 a = positions[triangle[0]];
+        vec3 b = positions[triangle[1]];
+        vec3 c = positions[triangle[2]];
+  
+        if (pointInTriangle(vec3(p, 0.0), a, b, c)) {
+            return true;
+        }
+    }
+  
+    return false;
+}
+
+vec2 rotate( vec2 v, float a ) {
+    float s = sin(a);
+    float c = cos(a);
+    mat2 m = mat2(c, -s, s, c);
+    return m * v;
+}
+      
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    float step = 1.0 / iResolution.y;
+  
+    fragColor = vec4(vec3(0.0), 1.0);
+    vec2 uv = fragCoord/iResolution.xy;
+    uv *= 2.0;
+    uv -= vec2(1.0);
+    uv.x *= iResolution.x/iResolution.y;
+    uv *= 1.4;
+    uv = rotate(uv, iTime * 0.2);
+
+    if (inPath(uv)) {
+        fragColor = vec4(1.0);
+    }
+}`;
+
 function shadertoy_svg() {
   var input = document.getElementById("file");
   var parse = document.getElementById("parse");
@@ -1993,14 +2050,21 @@ function shadertoy_svg() {
 
           var positions = "const vec3 positions[" + mesh.positions.length + "] = ";
           positions += "vec3[" + mesh.positions.length + "](" +
-            mesh.positions.map(function(it) { return "vec3(" + it.join(", ") + ")"; }).join(", ") +
+            mesh.positions.map(function (it) {
+              return "vec3(" + it.join(", ") + ")";
+            }).join(", ") +
             ");";
 
-          var indices = "const ivec3 indices[" + mesh.cells.length + "] = ";
-          indices += "ivec3[" + mesh.cells.length + "](" +
-            mesh.cells.map(function(it) { return "ivec3(" + it.join(", ") + ")"; }).join(", ") +
+          var triangles = "const ivec3 triangles[" + mesh.cells.length + "] = ";
+          triangles += "ivec3[" + mesh.cells.length + "](" +
+            mesh.cells.map(function (it) {
+              return "ivec3(" + it.join(", ") + ")";
+            }).join(", ") +
             ");";
-          output.value = positions + "\n" + indices;
+
+          var len = "const int len = " + mesh.cells.length + ";";
+
+          output.value = prefix + positions + "\n" + triangles + "\n" + len + "\n" + postfix;
 
           draw(mesh);
         } catch (e) {
@@ -2017,7 +2081,7 @@ function shadertoy_svg() {
     parseSVG();
   }
 
-  parse.onclick = function() {
+  parse.onclick = function () {
     parseSVG();
   }
 }

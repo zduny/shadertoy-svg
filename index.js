@@ -3,59 +3,62 @@ var parsePath = require('extract-svg-path').parse
 var svgMesh3d = require('svg-mesh-3d')
 var drawTriangles = require('draw-triangles-2d')
 
-function zip(a, b) {
-  return a.map(function (it, i) {
-    [it, b[i]];
-  });
+var prefix = `// Created using Shadertoy-SVG: https://dzduniak.github.io/shadertoy-svg/
+// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/MsyyWh
+
+`;
+
+var postfix = `
+bool sameSide( vec3 p1, vec3 p2, vec3 a, vec3 b ) {
+    vec3 cp1 = cross(b-a, p1-a);
+    vec3 cp2 = cross(b-a, p2-a);
+      
+    return dot(cp1, cp2) >= 0.0;
 }
 
-function cross(a, b) {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0]
-  ];
+bool pointInTriangle( vec3 p, vec3 a, vec3 b, vec3 c ) {
+    return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b);
 }
 
-function dot(a, b) {
-  zip(a, b).reduce(function (d, v) {
-    return d + v[0] * v[1];
-  });
-}
-
-function subtract(a, b) {
-  return a.map(function (it, i) {
-    it - b[i];
-  });
-}
-
-function multiply(a, m) {
-  return a.map(function (it) {
-    it * m;
-  });
-}
-
-function sameSide(p1, p2, a, b) {
-  cp1 = cross(subtract(b, a), subtract(p1, a));
-  cp2 = cross(subtract(b, a), subtract(p2, a));
-  return dot(cp1, cp2) >= 0;
-}
-
-function pointInTriangle(p, a, b, c) {
-  return sameSide(p, a, b, c) && sameSide(p, b, a, c) && sameSide(p, c, a, b)
-}
-
-function pointInAABB(p, min, max) {
-  return p[0] > min[0] && p[1] > min[1] && p[0] < max[0] && p[1] < max[1];
-}
-
-function segmentAABBTest(a, b, min, max) {
+bool inPath( vec2 p ) {
+    for (int i=0; i<len; i++) {
+        ivec3 triangle = triangles[i];
+        vec3 a = positions[triangle[0]];
+        vec3 b = positions[triangle[1]];
+        vec3 c = positions[triangle[2]];
   
+        if (pointInTriangle(vec3(p, 0.0), a, b, c)) {
+            return true;
+        }
+    }
+  
+    return false;
 }
 
-function triangleAABBTest(triangle, min, max) {
-
+vec2 rotate( vec2 v, float a ) {
+    float s = sin(a);
+    float c = cos(a);
+    mat2 m = mat2(c, -s, s, c);
+    return m * v;
 }
+      
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    float step = 1.0 / iResolution.y;
+  
+    fragColor = vec4(vec3(0.0), 1.0);
+    vec2 uv = fragCoord/iResolution.xy;
+    uv *= 2.0;
+    uv -= vec2(1.0);
+    uv.x *= iResolution.x/iResolution.y;
+    uv *= 1.4;
+    uv = rotate(uv, iTime * 0.2);
+
+    if (inPath(uv)) {
+        fragColor = vec4(1.0);
+    }
+}`;
 
 function shadertoy_svg() {
   var input = document.getElementById("file");
@@ -114,7 +117,9 @@ function shadertoy_svg() {
             }).join(", ") +
             ");";
 
-          output.value = positions + "\n" + triangles;
+          var len = "const int len = " + mesh.cells.length + ";";
+
+          output.value = prefix + positions + "\n" + triangles + "\n" + len + "\n" + postfix;
 
           draw(mesh);
         } catch (e) {
