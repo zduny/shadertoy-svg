@@ -1,7 +1,23 @@
 var loadSvg = require('load-svg')
-var parsePath = require('extract-svg-path').parse
+var parseXml = require('xml-parse-from-string')
 var svgMesh3d = require('svg-mesh-3d')
 var drawTriangles = require('draw-triangles-2d')
+
+function extractSvgPath (svgDoc) {
+  // concat all the <path> elements to form an SVG path string
+  if (typeof svgDoc === 'string') {
+    svgDoc = parseXml(svgDoc)
+  }
+  if (!svgDoc || typeof svgDoc.getElementsByTagName !== 'function') {
+    throw new Error('could not get an XML document from the specified SVG contents')
+  }
+
+  var paths = Array.prototype.slice.call(svgDoc.getElementsByTagName('path'))
+  return paths.reduce(function (prev, path) {
+    var d = path.getAttribute('d') || ''
+    return prev + ' ' + d.replace(/\s+/g, ' ').trim()
+  }, '').trim()
+}
 
 var prefix = `// Created using Shadertoy-SVG: https://dzduniak.github.io/shadertoy-svg/
 // For better performance, consider using buffers, see example: https://www.shadertoy.com/view/MsyyWh
@@ -100,8 +116,8 @@ function shadertoy_svg() {
       reader.onload = function () {
         try {
           var svg = reader.result;
-          var svgPath = parsePath(svg);
-          var mesh = svgMesh3d(svgPath, JSON.parse(options.value));
+          var path = extractSvgPath(svg);
+          var mesh = svgMesh3d(path, JSON.parse(options.value));
 
           var positions = "const vec3 positions[" + mesh.positions.length + "] = ";
           positions += "vec3[" + mesh.positions.length + "](" +

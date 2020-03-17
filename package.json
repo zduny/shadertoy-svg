@@ -19,10 +19,10 @@
   },
   "homepage": "https://github.com/dzduniak/shadertoy-svg#readme",
   "dependencies": {
-    "clipboard": "^2.0.0",
+    "clipboard": "^2.0.6",
     "draw-triangles-2d": "^1.0.0",
-    "extract-svg-path": "^2.1.0",
     "load-svg": "^1.0.0",
-    "svg-mesh-3d": "^1.1.0"
+    "svg-mesh-3d": "^1.1.0",
+    "xml-parse-from-string": "^1.0.1"
   }
 }
