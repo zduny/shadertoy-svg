@@ -20,7 +20,7 @@ function extractSvgPath (svgDoc) {
 }
 
 var prefix = `// Created using Shadertoy-SVG: https://zduny.github.io/shadertoy-svg/
-// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/MsyyWh
+// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/7lKGzR
 
 `;
 

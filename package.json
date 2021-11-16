@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dzduniak/shadertoy-svg.git"
+    "url": "git+https://github.com/zduny/shadertoy-svg.git"
   },
   "keywords": [
     "shadertoy",
@@ -15,9 +15,9 @@
   "author": "Daniel Zduniak",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dzduniak/shadertoy-svg/issues"
+    "url": "https://github.com/zduny/shadertoy-svg/issues"
   },
-  "homepage": "https://github.com/dzduniak/shadertoy-svg#readme",
+  "homepage": "https://github.com/zduny/shadertoy-svg#readme",
   "dependencies": {
     "clipboard": "^2.0.6",
     "draw-triangles-2d": "^1.0.0",

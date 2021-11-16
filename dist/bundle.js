@@ -21,7 +21,7 @@ function extractSvgPath (svgDoc) {
 }
 
 var prefix = `// Created using Shadertoy-SVG: https://zduny.github.io/shadertoy-svg/
-// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/MsyyWh
+// For better performance, consider using buffers, see example: https://www.shadertoy.com/view/7lKGzR
 
 `;
 
@@ -7165,7 +7165,7 @@ function solveIntersection (a, b, c, d) {
 }
 
 },{"big-rat/div":7,"big-rat/mul":17,"big-rat/sign":18,"big-rat/sub":19,"rat-vec/add":52,"rat-vec/muls":54,"rat-vec/sub":55}],39:[function(require,module,exports){
-(function (Buffer){
+(function (Buffer){(function (){
 var hasTypedArrays = false
 if(typeof Float64Array !== "undefined") {
   var DOUBLE_VIEW = new Float64Array(1)
@@ -7267,7 +7267,7 @@ module.exports.denormalized = function(n) {
   var hi = module.exports.hi(n)
   return !(hi & 0x7ff00000)
 }
-}).call(this,require("buffer").Buffer)
+}).call(this)}).call(this,require("buffer").Buffer)
 },{"buffer":77}],40:[function(require,module,exports){
 module.exports = function drawTriangles(ctx, positions, cells, start, end) {
     var v = positions
@@ -7336,7 +7336,7 @@ function dupe(count, value) {
 
 module.exports = dupe
 },{}],42:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 var win;
 
 if (typeof window !== "undefined") {
@@ -7351,7 +7351,7 @@ if (typeof window !== "undefined") {
 
 module.exports = win;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],43:[function(require,module,exports){
 var xhr = require('xhr');
 
@@ -9041,7 +9041,7 @@ function fastTwoSum(a, b, result) {
 	return [ar+br, x]
 }
 },{}],69:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 'use strict'
 
 var bits = require('bit-twiddle')
@@ -9294,7 +9294,7 @@ exports.clearCache = function clearCache() {
   }
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"bit-twiddle":22,"buffer":77,"dup":41}],70:[function(require,module,exports){
 "use strict"; "use restrict";
 
@@ -9704,9 +9704,7 @@ function fromByteArray (uint8) {
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(
-      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
-    ))
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
@@ -9733,7 +9731,7 @@ function fromByteArray (uint8) {
 },{}],76:[function(require,module,exports){
 
 },{}],77:[function(require,module,exports){
-(function (Buffer){
+(function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -9746,10 +9744,6 @@ function fromByteArray (uint8) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
-var customInspectSymbol =
-  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
-    ? Symbol.for('nodejs.util.inspect.custom')
-    : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -9786,9 +9780,7 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    var proto = { foo: function () { return 42 } }
-    Object.setPrototypeOf(proto, Uint8Array.prototype)
-    Object.setPrototypeOf(arr, proto)
+    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
     return arr.foo() === 42
   } catch (e) {
     return false
@@ -9817,7 +9809,7 @@ function createBuffer (length) {
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  Object.setPrototypeOf(buf, Buffer.prototype)
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -9867,7 +9859,7 @@ function from (value, encodingOrOffset, length) {
   }
 
   if (value == null) {
-    throw new TypeError(
+    throw TypeError(
       'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
       'or Array-like Object. Received type ' + (typeof value)
     )
@@ -9875,12 +9867,6 @@ function from (value, encodingOrOffset, length) {
 
   if (isInstance(value, ArrayBuffer) ||
       (value && isInstance(value.buffer, ArrayBuffer))) {
-    return fromArrayBuffer(value, encodingOrOffset, length)
-  }
-
-  if (typeof SharedArrayBuffer !== 'undefined' &&
-      (isInstance(value, SharedArrayBuffer) ||
-      (value && isInstance(value.buffer, SharedArrayBuffer)))) {
     return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
@@ -9925,8 +9911,8 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
-Object.setPrototypeOf(Buffer, Uint8Array)
+Buffer.prototype.__proto__ = Uint8Array.prototype
+Buffer.__proto__ = Uint8Array
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -10030,8 +10016,7 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(buf, Buffer.prototype)
-
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -10353,9 +10338,6 @@ Buffer.prototype.inspect = function inspect () {
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
 }
-if (customInspectSymbol) {
-  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
-}
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
   if (isInstance(target, Uint8Array)) {
@@ -10481,7 +10463,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -10810,7 +10792,7 @@ function hexSlice (buf, start, end) {
 
   var out = ''
   for (var i = start; i < end; ++i) {
-    out += hexSliceLookupTable[buf[i]]
+    out += toHex(buf[i])
   }
   return out
 }
@@ -10847,8 +10829,7 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(newBuf, Buffer.prototype)
-
+  newBuf.__proto__ = Buffer.prototype
   return newBuf
 }
 
@@ -11337,8 +11318,6 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
     }
   } else if (typeof val === 'number') {
     val = val & 255
-  } else if (typeof val === 'boolean') {
-    val = Number(val)
   }
 
   // Invalid ranges are not set to a default, so can range check early.
@@ -11394,6 +11373,11 @@ function base64clean (str) {
     str = str + '='
   }
   return str
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
 }
 
 function utf8ToBytes (string, units) {
@@ -11526,22 +11510,9 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-// Create lookup table for `toString('hex')`
-// See: https://github.com/feross/buffer/issues/219
-var hexSliceLookupTable = (function () {
-  var alphabet = '0123456789abcdef'
-  var table = new Array(256)
-  for (var i = 0; i < 16; ++i) {
-    var i16 = i * 16
-    for (var j = 0; j < 16; ++j) {
-      table[i16 + j] = alphabet[i] + alphabet[j]
-    }
-  }
-  return table
-})()
-
-}).call(this,require("buffer").Buffer)
+}).call(this)}).call(this,require("buffer").Buffer)
 },{"base64-js":75,"buffer":77,"ieee754":78}],78:[function(require,module,exports){
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
